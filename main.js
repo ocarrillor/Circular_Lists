@@ -40,7 +40,7 @@ class Route {
             this.start.before = base;
         }
     }
-
+ 
     delete(name) {
         let temp = this.start;
         let last = this.start.before;
@@ -59,12 +59,14 @@ class Route {
                 this.start = this.start.next;
             }
         } else{ //Eliminar base de en medio.
-            temp = temp.next;
-            while(temp != this.start) { 
+            temp = this.start.next;
+            while(temp != this.start && del == null) { 
                 if(temp.getName() == name) { 
                     del = temp;
                     temp.before.next = temp.next;
                     temp.next.before = temp.before;
+                    temp.next = null;
+                    temp.before = null;
                 } else{ 
                     temp = temp.next;
                 }
@@ -80,6 +82,7 @@ class Route {
         else {
             console.log(this.start.before);
             let listInfo = '';
+            console.log(this.start);
             let temp = this.start;
             do {
                listInfo += `<div>${temp.getInfo()}</div></br>`;
@@ -87,16 +90,6 @@ class Route {
             } while (temp != this.start);
             return listInfo;
         }
-    }
-    
-    createCard(base, hour, minutes) {
-        let temp = this.start;
-        let bases = '';
-        while(temp.next != null) {
-            bases += `${temp.getInfo()}`;
-            temp = temp.next
-        }
-        return bases;
     }
 }
 
