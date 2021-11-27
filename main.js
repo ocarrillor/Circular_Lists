@@ -1,7 +1,7 @@
 class Base {
     constructor(name, minutes) {
         this.name = name;
-        this.minutes = minutes;
+        this.minutes = Number(minutes);
         this.before = null;
         this.next = null;
     }
@@ -18,13 +18,15 @@ class Base {
         return `Base: ${this.name}, Duración: ${this.minutes} minutos`
     }
 
+    infoCard(hour, minutes) {
+        return `<div><p>Base: ${this.getName()}</p><p>Hora de llegada: ${hour}</p><p>Minutos restantes: ${minutes}</p>                                 
+                </div>`;
+    }
 }
 
 class Route {
     constructor() {
         this.start = null;
-        //this.before = null;
-        //this.next = null;
     }
 
     add(base) {
@@ -50,9 +52,9 @@ class Route {
         } else if(this.start.getName() == name){
             del = this.start;
             if(this.start.next == this.start) { //Eliminar primer base cuando solo hay una.
-                this.start = null;
                 this.start.next = null;
                 this.start.before = null;
+                this.start = null;
             } else{ //Eliminar primer base cuando hay mas de una.
                 last.next = this.start.next;
                 this.start.next.before = last;
@@ -80,15 +82,58 @@ class Route {
             return '<div>La lista está vacía </div>';
         }
         else {
-            console.log(this.start.before);
             let listInfo = '';
-            console.log(this.start);
             let temp = this.start;
             do {
                listInfo += `<div>${temp.getInfo()}</div></br>`;
                 temp = temp.next;
             } while (temp != this.start);
             return listInfo;
+        }
+    }
+
+    createCard(base, hour, minutesR) {
+        let card = '';   
+        let time = 0;
+        let find = this._findBase(base);
+
+        if(!find) {
+            return null;
+        } else {
+            do{
+                card += find.infoCard(this._hoursConvert(hour, time), minutesR) + '\n' + '------------------------------';               
+                time += find.next.getMinutes();
+                minutesR -= find.next.getMinutes();
+                find = find.next;
+            }while(minutesR >= 0);
+            return card;
+        }   
+    }
+    
+    _hoursConvert(hour, minutes) {
+        let hourMinutes = ((hour * 60) + minutes) / 60;
+        let hoursTotal = Math.trunc(hourMinutes);
+        let minusMinutes = Math.round((hourMinutes - hoursTotal) * 60);
+        if(minusMinutes < 10) {
+            return `${hoursTotal}:0${minusMinutes}`;
+        } else {
+            return `${hoursTotal}:${minusMinutes}`;
+        }
+    }
+
+    _findBase(name) {
+        let base = this.start;
+        if(!base) {
+            return null;
+        } else {
+            do{
+                if(base.getName() == name) {
+                    return base;
+                } else {
+                    base = base.next;
+                }
+            } while(base !== this.start);
+            return null;
         }
     }
 }
@@ -123,5 +168,20 @@ btnList.addEventListener('click', () =>  {
         details.innerHTML = '<div>La lista está vacía </div>';
     }else{
         details.innerHTML = `${route.list()}`
+    }
+});
+
+let btnCreateCard = document.getElementById('btnCreateCard');
+btnCreateCard.addEventListener('click', () =>{
+    let base = document.getElementById('base').value;
+    let hour = Number(document.getElementById('hour').value);
+    let minutes = Number(document.getElementById('minC').value); 
+    let cardCreated = route.createCard(base, hour, minutes);
+    if(!route) {
+        details.innerHTML = '<div>La lista está vacía</div>';
+    } else if(!cardCreated) {
+        details.innerHTML = `<div>La base: ${base} no existe</div>`;
+    } else {
+        details.innerHTML = `<div>${cardCreated}</div>`;
     }
 });
